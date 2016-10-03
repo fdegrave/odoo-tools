@@ -31,4 +31,4 @@ Once a new state is (automatically) reached, the field "state" is updated to ref
     def foo(self):
         ...
 
-There is also a "signal-like" system, where you can "send a signal" to a recordset using `recordset.fsm_send_signal('toto')` and then check in the transition condition `self.fsm_get_signal('toto')`. Moreover, one can use the standard workflow signals -- and thus the "signal" buttons in views -- to send the FSM-signals.
+There is also a "signal-like" system, where you can "send a signal" to a recordset using `recordset.fsm_send_signal('toto')` and check in the transition condition if the signal is received, using `self.fsm_get_signal('toto')`. Moreover, one can use the standard workflow signals -- and thus the "signal" buttons in views -- to send the FSM-signals.

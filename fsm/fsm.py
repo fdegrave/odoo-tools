@@ -56,7 +56,7 @@ def _get_methods(self, attribute, value):
 
 def _trigger_actions(self, state):
     actions = _get_methods(self, "_fsm_actions", state)
-    actions.append(getattr(self, "fsm_action_%s" % state, lambda *a: None))
+    actions.append(getattr(type(self), "fsm_action_%s" % state, lambda *a: None))
     for act in actions:
         act(self)
 
@@ -68,7 +68,7 @@ def _trigger_state_transition(self):
     if 'state' in self._fields and self._fields['state'].type == "selection":
         for target_state in [r[0] for r in self._fields['state']._description_selection(self.env)
                              if r[0] != self.state]:
-            methods = filter(None, [getattr(self, "fsm_transition_%s_%s" % (self.state, target_state), None)] +
+            methods = filter(None, [getattr(type(self), "fsm_transition_%s_%s" % (self.state, target_state), None)] +
                              _get_methods(self, "_fsm_transitions", "%s:%s" % (self.state, target_state)))
             if any(meth(self) for meth in methods):
                 self.with_context(no_state_trigger=True).state = target_state

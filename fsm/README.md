@@ -15,7 +15,8 @@ Hence, the following:
 Is equivalent to:
 
     from openerp.addons.fsm import fsm
-    @fsm.transition('draft:open', 'draft:proforma')
+        ...
+        @fsm.transition('draft:open', 'draft:proforma')
         def toto(self):
             ...
 

@@ -2,7 +2,7 @@
 
 ### A declarative Pythonic replacement for (simple) workflows
 
-This module provides the possibility to deal with the states transitions (and execute actions once a state is reached) in a declarative fashion. The system automatically triggers state transitions on odoo models based on conditions expressed under the form of methods, either named `fsm_transition_[current_state]_[target_state]` or decorated with the "transition" decorator provided, with the argument `('[current_state]:[target_state]')` (several can be provided).
+This module provides the possibility to deal with the state transitions (and execute actions once a state is reached) in a declarative fashion. The system automatically triggers state transitions on odoo models based on conditions expressed under the form of boolean methods, either named `fsm_transition_[current_state]_[target_state]` or decorated with the "transition" decorator provided, with the argument `('[current_state]:[target_state]')` (several can be provided).
 
 Hence, the following:
 
@@ -20,10 +20,9 @@ Is equivalent to:
         def toto(self):
             ...
 
-If any transition condition is satisfied, the state transition is triggered (and no other transition condition is checked afterwards -- meaning the first condition verified determines the next state to reach).
+If any transition condition is satisfied, the state transition is triggered (and no other transition condition is checked afterwards -- meaning the first condition verified determines the next state).
 
-Once a new state is (automatically) reached, the field "state" is updated to reflect this change and the method named
-`fsm_action_[new_state]` as well as all the methods decorated with the "action" decorator with the argument `('[new_state]')` are called. For example, both the following methods are called once the 'open' state is reached:
+Once a new state is (automatically) reached, the field "state" is updated to reflect this change (no need to write the "state" field explicitely) and the method named `fsm_action_[new_state]` as well as all the methods decorated with the "action" decorator with the argument `('[new_state]')` are executed. For example, both the following methods are called once the 'open' state is reached:
 
     def fsm_action_open(self):
         ...
@@ -32,4 +31,6 @@ Once a new state is (automatically) reached, the field "state" is updated to ref
     def foo(self):
         ...
 
-There is also a "signal-like" system, where you can "send a signal" to a recordset using `recordset.fsm_send_signal('toto')` and check in the transition condition if the signal is received, using `self.fsm_get_signal('toto')`. Moreover, one can use the standard workflow signals -- and thus the "signal" buttons in views -- to send the FSM-signals.
+This module also provides a "signal-like" system such that one can "send a signal" to a recordset using `recordset.fsm_send_signal('toto')` from anywhere in the code and check in the transition condition if the signal is received, using `self.fsm_get_signal('toto')`. Moreover, the standard workflow signals are overridden to send the FSM-signals as well, meaning that the standard "workflow" buttons can be used to trigger FSM-transitions.
+
+Note that in order to work, the Odoo model under interest **must** have a `state` attribute of type `field.Selection`.

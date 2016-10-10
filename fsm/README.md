@@ -34,3 +34,7 @@ Once a new state is (automatically) reached, the field "state" is updated to ref
 This module also provides a "signal-like" system such that one can "send a signal" to a recordset using `recordset.fsm_send_signal('toto')` from anywhere in the code and check in the transition condition if the signal is received, using `self.fsm_get_signal('toto')`. Moreover, the standard workflow signals are overridden to send the FSM-signals as well, meaning that the standard "workflow" buttons can be used to trigger FSM-transitions.
 
 Note that in order to work, the Odoo model under interest **must** have a `state` attribute of type `field.Selection`.
+
+###Planned improvements
+* Possibility to use other fields than `state` as nodes of the FSM (even several ones on the same object);
+* Add a helper decorator named `groups` OR a keyword argument on the `transition` decorator in order to declare the groups authorized to trigger a given transition

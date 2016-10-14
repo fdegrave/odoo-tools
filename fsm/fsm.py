@@ -88,15 +88,15 @@ models.BaseModel._patch_method("_write", _write)
 
 
 @api.model
-def _create(recset, vals):
+def create(recset, vals):
     """Patching of the create method to trigger the state transition"""
-    res = _create.origin(recset, vals)
+    res = create.origin(recset, vals)
     if 'state' in res._fields:
         _trigger_actions(res, res.state)  # action on the starting state
     _trigger_state_transition(res)
     return res
 
-models.BaseModel._patch_method("_create", _create)
+models.BaseModel._patch_method("create", create)
 
 
 def signal_workflow(self, cr, uid, ids, signal, context=None):

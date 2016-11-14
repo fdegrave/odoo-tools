@@ -76,51 +76,39 @@ def _trigger_state_transition(self):
                 break
 
 
-@api.multi
-def _write(recset, vals):
-    """Patching of the write method to trigger the state transition"""
-    res = _write.origin(recset, vals)
-    for rec in recset:
-        _trigger_state_transition(rec)
-    return res
+class Base(models.AbstractModel):
+    _inherit = 'base'
 
-models.BaseModel._patch_method("_write", _write)
+    @api.multi
+    def _write(self, vals):
+        """Override the write method to trigger the state transition"""
+        res = super(Base, self)._write(vals)
+        for rec in self:
+            _trigger_state_transition(rec)
+        return res
 
+    @api.model
+    def create(self, vals):
+        """Override the create method to trigger the state transition"""
+        res = super(Base, self).create(vals)
+        if 'state' in res._fields:
+            _trigger_actions(res, res.state)  # action on the starting state
+        _trigger_state_transition(res)
+        return res
 
-@api.model
-def create(recset, vals):
-    """Patching of the create method to trigger the state transition"""
-    res = create.origin(recset, vals)
-    if 'state' in res._fields:
-        _trigger_actions(res, res.state)  # action on the starting state
-    _trigger_state_transition(res)
-    return res
+    def signal_workflow(self, signal):
+        """Override the signal_workflow to send a 'fsm signal' as well"""
+        res = super(Base, self).signal_workflow(signal)
+        self.fsm_send_signal(signal)
+        return res
 
-models.BaseModel._patch_method("create", create)
+    @api.multi
+    def fsm_send_signal(self, signal):
+        """Trigger state transition with a 'fsm_signal_' + model name context key"""
+        for rec in self:
+            _trigger_state_transition(rec.with_context({'fsm_signal_' + self._name: signal}))
 
-
-def signal_workflow(self, cr, uid, ids, signal, context=None):
-    """Patching of the signal_workflow to send a 'fsm signal' as well"""
-    res = signal_workflow.origin(self, cr, uid, ids, signal, context=context)
-    recset = self.browse(cr, uid, ids)
-    fsm_send_signal(recset, signal)
-    return res
-
-models.BaseModel._patch_method("signal_workflow", signal_workflow)
-
-
-@api.multi
-def fsm_send_signal(recset, signal):
-    """Trigger state transition with a 'fsm_signal_' + model name context key"""
-    for rec in recset:
-        _trigger_state_transition(rec.with_context({'fsm_signal_' + recset._name: signal}))
-
-models.BaseModel.fsm_send_signal = fsm_send_signal
-
-
-@api.multi
-def fsm_get_signal(recset, signal):
-    """Just check if the context contains a key 'fsm_signal_' + model name with a value == `signal`"""
-    return recset._context.get('fsm_signal_' + recset._name) == signal
-
-models.BaseModel.fsm_get_signal = fsm_get_signal
+    @api.multi
+    def fsm_get_signal(self, signal):
+        """Just check if the context contains a key 'fsm_signal_' + model name with a value == `signal`"""
+        return self._context.get('fsm_signal_' + self._name) == signal

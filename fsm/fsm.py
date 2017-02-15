@@ -22,13 +22,22 @@ from odoo import models, api
 from inspect import getmembers
 
 
-def transition(*args):
+def transition(*args, **kwargs):
     """Decorator that adds a '_fsm_transitions' attribute to the method containing the list of state transitions for
     which this method is a condition
     """
     def inner(method):
-        method._fsm_transitions = args
-        return method
+        if 'groups' in kwargs:
+            def group_decorator(self, *a, **kw):
+                groups = [self.env.ref(g.strip()) for g in kwargs['groups'].split(',')]
+                if any(self.env.user in gr.users for gr in groups):
+                    return method(self, *a, **kw)
+                return False
+            group_decorator._fsm_transitions = args
+            return group_decorator
+        else:
+            method._fsm_transitions = args
+            return method
     return inner
 
 

@@ -1,6 +1,6 @@
 {
     "name": "Finite-State Machine",
-    "version": "1.1",
+    "version": "1.2",
     "depends": ["base", "mail"],
     "author": "University of Namur",
     "category": "Extra Tools",

@@ -59,8 +59,8 @@ def _get_methods(self, attribute, value):
     cls = type(self)
     methods = []
     for _attr, func in getmembers(cls, has_attribute):
-        methods.append(func.__name__)
-    return [getattr(type(self), an) for an in set(methods)]
+        methods.append(func)
+    return [m for m in set(methods)]
 
 
 def _trigger_actions(self, state):
